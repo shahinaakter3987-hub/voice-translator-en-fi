@@ -30,12 +30,20 @@ if (!recognition) {
 }
 
 async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        statusMsg.textContent = "Your browser does not support camera access or you are not in a secure context (HTTPS/localhost).";
+        return;
+    }
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         videoFeed.srcObject = stream;
     } catch (err) {
         console.error("Error accessing camera:", err);
-        statusMsg.textContent = "Camera access denied. Video features disabled.";
+        if (err.name === 'NotAllowedError') {
+            statusMsg.textContent = "Camera access denied by user. Please check permissions.";
+        } else {
+            statusMsg.textContent = `Camera Error: ${err.message}`;
+        }
     }
 }
 
@@ -116,7 +124,13 @@ recognition.onresult = (event) => {
 
 recognition.onerror = (event) => {
     console.error('Speech recognition error:', event.error);
-    statusMsg.textContent = `Error: ${event.error}`;
+    if (event.error === 'not-allowed') {
+        statusMsg.textContent = 'Microphone permission denied. Please enable it in browser settings.';
+    } else if (event.error === 'service-not-allowed') {
+        statusMsg.textContent = 'Speech service not allowed. Are you in a secure context (localhost/HTTPS)?';
+    } else {
+        statusMsg.textContent = `Error: ${event.error}`;
+    }
     isListening = false;
     micBtn.classList.remove('active');
 };
