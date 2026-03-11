@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceTrans | Instant EN-FI Translator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>VoiceTrans</h1>
+                <p class="subtitle">Experience real-time speech translation</p>
+            </header>
+
+            <div class="controls">
+                <div class="mode-toggle" id="mode-toggle" title="Click to switch translation direction">
+                    <div class="slider"></div>
+                    <span class="label" id="label-left">EN → FI</span>
+                    <span class="label" id="label-right">FI → EN</span>
+                </div>
+            </div>
+
+            <div class="display-grid">
+                <div class="box">
+                    <label id="input-label">Speech Input (English)</label>
+                    <div id="transcript" class="text-area" placeholder="Speak now..."></div>
+                </div>
+                <div class="box">
+                    <label id="output-label">Translation (Finnish)</label>
+                    <div id="translation" class="text-area"></div>
+                </div>
+            </div>
+
+            <div id="status"></div>
+
+            <div class="mic-section">
+                <button id="mic-btn" class="mic-btn">
+                    <i data-lucide="mic"></i>
+                </button>
+                <p id="mic-instruction">Press to start listening</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+</body>
+</html>
