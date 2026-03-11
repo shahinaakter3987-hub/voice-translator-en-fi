@@ -11,6 +11,8 @@ const modeToggle = document.getElementById('mode-toggle');
 const inputLabel = document.getElementById('input-label');
 const outputLabel = document.getElementById('output-label');
 const statusMsg = document.getElementById('status');
+const videoFeed = document.getElementById('video-feed');
+const subtitleOverlay = document.getElementById('subtitles');
 
 // State
 let isListening = false;
@@ -24,6 +26,17 @@ if (!recognition) {
     recognition.continuous = true;
     recognition.interimResults = true;
     updateRecognitionSettings();
+    startCamera();
+}
+
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        videoFeed.srcObject = stream;
+    } catch (err) {
+        console.error("Error accessing camera:", err);
+        statusMsg.textContent = "Camera access denied. Video features disabled.";
+    }
 }
 
 // Toggle Mode Logic
@@ -128,7 +141,9 @@ async function translateText(text) {
         const data = await response.json();
         
         if (data.responseData) {
-            translationArea.textContent = data.responseData.translatedText;
+            const translatedText = data.responseData.translatedText;
+            translationArea.textContent = translatedText;
+            subtitleOverlay.textContent = translatedText;
         } else {
             translationArea.textContent = 'Translation error...';
         }
