@@ -13,6 +13,15 @@ const outputLabel = document.getElementById('output-label');
 const statusMsg = document.getElementById('status');
 const videoFeed = document.getElementById('video-feed');
 const subtitleOverlay = document.getElementById('subtitles');
+const canvas = document.getElementById('visualizer');
+const canvasCtx = canvas.getContext('2d');
+const visualizerContainer = document.querySelector('.visualizer-container');
+
+// Audio Context State
+let audioCtx;
+let analyser;
+let source;
+let animationId;
 
 // State
 let isListening = false;
@@ -78,15 +87,70 @@ function updateRecognitionSettings() {
 }
 
 // Mic Button Control
-micBtn.addEventListener('click', () => {
+micBtn.addEventListener('click', async () => {
     if (isListening) {
-        recognition.stop();
+        stopListening();
     } else {
+        await startListening();
+    }
+});
+
+async function startListening() {
+    try {
+        // First try to get a raw audio stream to prove the mic works
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        initVisualizer(stream);
+        
         recognition.start();
         transcriptArea.textContent = '';
         translationArea.textContent = '';
+    } catch (err) {
+        console.error('Error starting microphone:', err);
+        statusMsg.textContent = 'Could not access microphone. Please check permissions.';
     }
-});
+}
+
+function stopListening() {
+    recognition.stop();
+    if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+    }
+    cancelAnimationFrame(animationId);
+    visualizerContainer.classList.remove('active');
+}
+
+function initVisualizer(stream) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    visualizerContainer.classList.add('active');
+    
+    function draw() {
+        animationId = requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let barHeight;
+        let x = 0;
+        
+        for(let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i] / 2;
+            canvasCtx.fillStyle = `rgb(99, 102, 241)`;
+            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+            x += barWidth + 1;
+        }
+    }
+    draw();
+}
 
 // Recognition Event Handlers
 recognition.onstart = () => {
@@ -100,6 +164,11 @@ recognition.onend = () => {
     isListening = false;
     micBtn.classList.remove('active');
     micInstruction.textContent = 'Press to start listening';
+    // Visualizer will stop via stopListening if button clicked, 
+    // but we also stop it here if recognition ends naturally
+    if (audioCtx && audioCtx.state !== 'closed') {
+        stopListening();
+    }
 };
 
 recognition.onresult = (event) => {

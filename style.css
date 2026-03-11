@@ -210,7 +210,26 @@ p.subtitle {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+}
+
+.visualizer-container {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.visualizer-container.active {
+  opacity: 1;
+}
+
+#visualizer {
+  width: 200px;
+  height: 100%;
 }
 
 .mic-btn {
